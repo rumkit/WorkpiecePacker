@@ -15,13 +15,22 @@ namespace Packer
     {
         private List<Rectangle> _rectangles = new List<Rectangle>();
         private List<PackableRectangle> _packableRectangles = new List<PackableRectangle>();
+
         public MainWindow()
         {
             InitializeComponent();
+#if DEBUG
             RectanglesTextBox.Text = "40x25x8\r\n40x50x4\r\n80x50x3";
-            WidthTextBox.Text = RectanglesCanvas.Width.ToString();
-            HeighTextBox.Text = RectanglesCanvas.Height.ToString();
+            WidthTextBox.Text = "400";
+            HeighTextBox.Text = "2000";
+#endif
+
             _random = new Random(DateTime.Now.Millisecond);
+        }
+
+        private void MainWindow_OnLoaded(object sender, RoutedEventArgs e)
+        {
+           
         }
 
         private void ActionButton_Click(object sender, RoutedEventArgs e)
@@ -94,9 +103,9 @@ namespace Packer
 
         private void ArrangeRectangles()
         {
-            PlaceRectangle(new Area() { Height = RectanglesCanvas.Height, Width = RectanglesCanvas.Width, X = 0, Y = 0 },
+            PlaceRectangle(new Area() { Height = PackingArea.Height, Width = PackingArea.Width, X = 0, Y = 0 },
                 _packableRectangles);
-            RectanglesCanvas.Children.Clear();
+            PackingArea.Items.Clear();
             var placedRectangles = _packableRectangles.Where((r) => r.IsPlaced);
             var placedRectanglesArray = placedRectangles as PackableRectangle[] ?? placedRectangles.ToArray();
             if (placedRectanglesArray.Count() < _packableRectangles.Count)
@@ -104,7 +113,7 @@ namespace Packer
                                 " прямоугольников");
             foreach (var packableRectangle in placedRectanglesArray)
             {
-                packableRectangle.PutOnCanvas(RectanglesCanvas);
+                PackingArea.Items.Add(packableRectangle);
             }
         }
 
@@ -199,11 +208,11 @@ namespace Packer
 
         private void ResizeCanvasButton_Click(object sender, RoutedEventArgs e)
         {
-            RectanglesCanvas.Width = double.Parse(WidthTextBox.Text);
-            RectanglesCanvas.Height = double.Parse(HeighTextBox.Text);
+            PackingArea.Width = double.Parse(WidthTextBox.Text);
+            PackingArea.Height = double.Parse(HeighTextBox.Text);
         }
 
 
-
+       
     }
 }

@@ -5,14 +5,43 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Packer"
         mc:Ignorable="d"
-        Title="MainWindow" Height="350" Width="525">
+        Title="Размещение заготовок" Height="350" Width="525" Loaded="MainWindow_OnLoaded">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="9*"/>
             <ColumnDefinition Width="3*"/>
         </Grid.ColumnDefinitions>
         <ScrollViewer>
-            <Canvas x:Name="RectanglesCanvas" Height="2000" Width="350" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="LightGray"/>
+            <Grid>
+                <ItemsControl x:Name="PackingArea"
+                          Margin="5">
+                    <ItemsControl.Resources>
+                        <Style TargetType="ContentPresenter">
+                            <Setter Property="Canvas.Top" Value="{Binding Y}"></Setter>
+                            <Setter Property="Canvas.Left" Value="{Binding X}"></Setter>
+                        </Style>
+                    </ItemsControl.Resources>
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <Canvas x:Name="PackingCanvas"
+                                Background="LightGray"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <ItemContainerTemplate>
+                            <Border BorderThickness="3" BorderBrush="Black" Width="{Binding Width}" Height="{Binding Height}" Background="{Binding Background}">
+                                <Viewbox>
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                        <Label Content="{Binding Height}"/>
+                                        <Label Content="X"/>
+                                        <Label Content="{Binding Width}"/>
+                                    </StackPanel>
+                                </Viewbox>
+                            </Border>
+                        </ItemContainerTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </Grid>
         </ScrollViewer>
         <StackPanel Grid.Column="1" Orientation="Vertical">
             <StackPanel Margin="0,5,0,0" Orientation="Horizontal">
@@ -30,3 +59,4 @@
 
     </Grid>
 </Window>
+

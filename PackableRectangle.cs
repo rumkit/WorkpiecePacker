@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Windows.Controls;
+using System.Windows.Media;
 using System.Windows.Shapes;
 
 namespace Packer
@@ -7,7 +10,7 @@ namespace Packer
     public class PackableRectangle
     {
         private readonly Rectangle _rectangle;
-        
+
         public PackableRectangle(Rectangle rectangle)
         {
             _rectangle = rectangle;
@@ -21,6 +24,9 @@ namespace Packer
         public double Width { get { return _rectangle.Width; } }
         public double Height { get { return _rectangle.Height; } }
 
+        public Brush Background => _rectangle.Fill;
+        
+
         public void Rotate()
         {
             var width = _rectangle.Width;
@@ -28,21 +34,41 @@ namespace Packer
             _rectangle.Height = width;
         }
 
+
+        // TODO: вместо этого будем писать шаблон для коллекции
         public void PutOnCanvas(Canvas canvas)
         {
-            Canvas.SetLeft(_rectangle,X);
+            Canvas.SetLeft(_rectangle, X);
             Canvas.SetTop(_rectangle, Y);
             canvas.Children.Add(_rectangle);
         }
 
+
+        // 
         public bool Fit(Area area)
         {
             return ((this.Width <= area.Width) && (this.Height <= area.Height));
         }
 
+        // Вовзращает экземпляр из строки вида [длина]х[ширина]х[кол-во]
+        public static IEnumerable<PackableRectangle> FromString(string defenition)
+        {
+            var rectangleDimensions = defenition.Split(new[] { "x", "X", "х", "Х" }, StringSplitOptions.RemoveEmptyEntries);
+            for (int i = 0; i < Int32.Parse(rectangleDimensions[2]); i++)
+            {
+                var baseRectangle = new Rectangle()
+                {
+                    Height = Int32.Parse(rectangleDimensions[0]),
+                    Width = Int32.Parse(rectangleDimensions[1])
+                };
+                yield return new PackableRectangle(baseRectangle);
+            }
+
+        }
+
         public override string ToString()
         {
-            return String.Format("Rectangle H:{0}, W:{1}, X:{2}, Y:{3}", Height, Width, X, Y);
+            return $"Rectangle H:{Height}, W:{Width}, X:{X}, Y:{Y}";
         }
     }
 }
