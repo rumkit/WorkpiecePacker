@@ -5,16 +5,19 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Packer"
         mc:Ignorable="d"
-        Title="Размещение заготовок" Height="350" Width="525" Loaded="MainWindow_OnLoaded">
+        Title="Размещение заготовок" Height="502" Width="594" Loaded="MainWindow_OnLoaded">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="9*"/>
             <ColumnDefinition Width="3*"/>
         </Grid.ColumnDefinitions>
         <ScrollViewer>
-            <Grid>
-                <ItemsControl x:Name="PackingArea"
-                          Margin="5">
+            <Grid x:Name="ScrollViewerRootGrid">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="30"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>              
+                <ItemsControl x:Name="PackingArea" Margin="0" Grid.Column="1">
                     <ItemsControl.Resources>
                         <Style TargetType="ContentPresenter">
                             <Setter Property="Canvas.Top" Value="{Binding Y}"></Setter>
@@ -41,6 +44,9 @@
                         </ItemContainerTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
+                <Canvas Background="AntiqueWhite" x:Name="LengthIndicatorCanvas" Grid.Column="0">
+                    <Line Stroke="Red" Grid.ColumnSpan="2" X2="400" Canvas.Top="40" StrokeThickness="3" />
+                </Canvas>
             </Grid>
         </ScrollViewer>
         <StackPanel Grid.Column="1" Orientation="Vertical">

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Shapes;
 
@@ -103,7 +104,7 @@ namespace Packer
 
         private void ArrangeRectangles()
         {
-            PlaceRectangle(new Area() { Height = PackingArea.Height, Width = PackingArea.Width, X = 0, Y = 0 },
+            var totalLength = PlaceRectangle(new Area() { Height = PackingArea.Height, Width = PackingArea.Width, X = 0, Y = 0 },
                 _packableRectangles);
             PackingArea.Items.Clear();
             var placedRectangles = _packableRectangles.Where((r) => r.IsPlaced);
@@ -115,6 +116,21 @@ namespace Packer
             {
                 PackingArea.Items.Add(packableRectangle);
             }
+
+            DrawLengthIndicator(totalLength);
+        }
+
+
+        private void DrawLengthIndicator(double totalLength)
+        {
+           // LengthIndicatorCanvas.Children.Clear();
+            var verticalIndicator = new Line() {Y2 = totalLength, Stroke = Brushes.Red, StrokeThickness = 4};
+            var horizontalIndicator = new Line() { Y1 = totalLength, Y2 = totalLength, X2=PackingArea.ActualWidth + LengthIndicatorCanvas.ActualWidth, Stroke = Brushes.Red, StrokeThickness = 1 };
+            Canvas.SetLeft(verticalIndicator,20);
+
+           // LengthIndicatorCanvas.Children.Add(verticalIndicator);
+            
+           // ScrollViewerRootGrid.Children.
         }
 
         private double PlaceRectangle(Area area, IEnumerable<PackableRectangle> packableRectangles)
