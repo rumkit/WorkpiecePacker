@@ -11,41 +11,49 @@
             <ColumnDefinition Width="9*"/>
             <ColumnDefinition Width="3*"/>
         </Grid.ColumnDefinitions>
-        <ScrollViewer>
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Hidden">
             <Grid x:Name="ScrollViewerRootGrid">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="30"/>
                     <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>              
-                <ItemsControl x:Name="PackingArea" Margin="0" Grid.Column="1">
-                    <ItemsControl.Resources>
-                        <Style TargetType="ContentPresenter">
-                            <Setter Property="Canvas.Top" Value="{Binding Y}"></Setter>
-                            <Setter Property="Canvas.Left" Value="{Binding X}"></Setter>
-                        </Style>
-                    </ItemsControl.Resources>
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <Canvas x:Name="PackingCanvas"
+                </Grid.ColumnDefinitions>
+                <ScrollViewer VerticalScrollBarVisibility="Hidden" HorizontalScrollBarVisibility="Visible" Grid.Column="1">
+                    <ItemsControl x:Name="PackingArea" Margin="0" Grid.Column="1">
+                        <ItemsControl.Resources>
+                            <Style TargetType="ContentPresenter">
+                                <Setter Property="Canvas.Top" Value="{Binding Y}"></Setter>
+                                <Setter Property="Canvas.Left" Value="{Binding X}"></Setter>
+                            </Style>
+                        </ItemsControl.Resources>
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <Canvas x:Name="PackingCanvas"
                                 Background="LightGray"/>
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                    <ItemsControl.ItemTemplate>
-                        <ItemContainerTemplate>
-                            <Border BorderThickness="3" BorderBrush="Black" Width="{Binding Width}" Height="{Binding Height}" Background="{Binding Background}">
-                                <Viewbox>
-                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
-                                        <Label Content="{Binding Height}"/>
-                                        <Label Content="X"/>
-                                        <Label Content="{Binding Width}"/>
-                                    </StackPanel>
-                                </Viewbox>
-                            </Border>
-                        </ItemContainerTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <ItemContainerTemplate>
+                                <Border BorderThickness="3" BorderBrush="Black" Width="{Binding Width}" Height="{Binding Height}" Background="{Binding Background}">
+                                    <Viewbox>
+                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                            <Label Content="{Binding Height}"/>
+                                            <Label Content="X"/>
+                                            <Label Content="{Binding Width}"/>
+                                        </StackPanel>
+                                    </Viewbox>
+                                </Border>
+                            </ItemContainerTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
                 <Canvas Background="AntiqueWhite" x:Name="LengthIndicatorCanvas" Grid.Column="0">
-                    <Line Stroke="Red" Grid.ColumnSpan="2" X2="400" Canvas.Top="40" StrokeThickness="3" />
+                    <StackPanel x:Name="LengthIndicator" Canvas.Top="40" Width="300" Visibility="Collapsed">
+                        <StackPanel Orientation="Horizontal">
+                            <Path Data="M20,20 L0,10 0,30 20,20" Stroke="Red" Fill="DarkRed"></Path>
+                            <Line Stroke="Red" X2="1080" StrokeThickness="3" Margin="0,20,0,0"/>
+                        </StackPanel>
+                        <Label x:Name="LengthIndicatorLabel" Content="40" FontSize="18" Foreground="Red" FontWeight="Bold"></Label>
+                    </StackPanel>
                 </Canvas>
             </Grid>
         </ScrollViewer>
@@ -65,4 +73,6 @@
 
     </Grid>
 </Window>
+
+
 

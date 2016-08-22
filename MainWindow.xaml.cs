@@ -123,14 +123,10 @@ namespace Packer
 
         private void DrawLengthIndicator(double totalLength)
         {
-           // LengthIndicatorCanvas.Children.Clear();
-            var verticalIndicator = new Line() {Y2 = totalLength, Stroke = Brushes.Red, StrokeThickness = 4};
-            var horizontalIndicator = new Line() { Y1 = totalLength, Y2 = totalLength, X2=PackingArea.ActualWidth + LengthIndicatorCanvas.ActualWidth, Stroke = Brushes.Red, StrokeThickness = 1 };
-            Canvas.SetLeft(verticalIndicator,20);
-
-           // LengthIndicatorCanvas.Children.Add(verticalIndicator);
+            Canvas.SetTop(LengthIndicator, totalLength);
+            LengthIndicatorLabel.Content = totalLength;
+            LengthIndicator.Visibility = Visibility.Visible;
             
-           // ScrollViewerRootGrid.Children.
         }
 
         private double PlaceRectangle(Area area, IEnumerable<PackableRectangle> packableRectangles)
