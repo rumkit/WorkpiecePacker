@@ -21,8 +21,10 @@ namespace Packer
         public double X { get; set; }
         public double Y { get; set; }
 
-        public double Width { get { return _rectangle.Width; } }
-        public double Height { get { return _rectangle.Height; } }
+        public double Width { get { return _rectangle.Width + 2*Allowance; } }
+        public double Height { get { return _rectangle.Height + 2*Allowance; } }
+
+        public double Allowance { get; set; }
 
         public Brush Background => _rectangle.Fill;
         
@@ -68,7 +70,8 @@ namespace Packer
 
         public override string ToString()
         {
-            return $"Rectangle H:{Height}, W:{Width}, X:{X}, Y:{Y}";
+            //return $"Rectangle H:{Height}, W:{Width}, X:{X}, Y:{Y}";
+            return $"{_rectangle.Width}X{_rectangle.Height}";
         }
     }
 }

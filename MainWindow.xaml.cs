@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -17,27 +18,44 @@ namespace Packer
         private List<Rectangle> _rectangles = new List<Rectangle>();
         private List<PackableRectangle> _packableRectangles = new List<PackableRectangle>();
 
+        private const double DefaultSheetWidth = 500;
+        private const double DefaultSheetHeight = 1000;
+        private const double DefaultSheetAllowance = 10;
+        private const double DefaultWorkpieceAllowance = 2.5;
+
+        private Random _random;
+        private double _sheetAllowance = DefaultSheetAllowance;
+        private double _workpieceAllowance = DefaultWorkpieceAllowance;
+
         public MainWindow()
         {
             InitializeComponent();
+
 #if DEBUG
-            RectanglesTextBox.Text = "40x25x8\r\n40x50x4\r\n80x50x3";
-            WidthTextBox.Text = "400";
-            HeighTextBox.Text = "2000";
+            RectanglesTextBox.Text = "30x40x11\r\n150x80x4\r\n251x110x3";
 #endif
+            // Установим значения по умолчанию
+            WidthTextBox.Text = DefaultSheetWidth.ToString(CultureInfo.CurrentCulture);
+            HeighTextBox.Text = DefaultSheetHeight.ToString(CultureInfo.CurrentCulture);
+            SheetAllowance.Text = _sheetAllowance.ToString(CultureInfo.CurrentCulture);
+            WorkPieceAllowance.Text = _workpieceAllowance.ToString(CultureInfo.CurrentCulture);
+
 
             _random = new Random(DateTime.Now.Millisecond);
         }
 
         private void MainWindow_OnLoaded(object sender, RoutedEventArgs e)
         {
-           
+            // Установим дефолтные габариты листа и значения припусков
+            SetSheetSize();
+            SetAllowances();
+            
         }
 
         private void ActionButton_Click(object sender, RoutedEventArgs e)
         {
             FillCollection(RectanglesTextBox.Text);
-            ArrangeRectangles();
+            ArrangeRectangles(PackingArea.ActualWidth, PackingArea.ActualHeight);
         }
 
         void FillCollection(string defenitionString)
@@ -53,12 +71,11 @@ namespace Packer
                     {
                         _rectangles.Add(new Rectangle()
                         {
-                            Height = Int32.Parse(rectParams[0]),
-                            Width = Int32.Parse(rectParams[1]),
+                            Height = Double.Parse(rectParams[0]),
+                            Width = Double.Parse(rectParams[1]),
                             Stroke = Brushes.Black,
                             StrokeThickness = 3,
                             Fill = GetRandomBrush()
-
                         });
                     }
                 }
@@ -69,12 +86,77 @@ namespace Packer
             }
             foreach (var rectangle in _rectangles)
             {
-                _packableRectangles.Add(new PackableRectangle(rectangle));
+                _packableRectangles.Add(new PackableRectangle(rectangle) {Allowance = _workpieceAllowance});
             }
 
             _packableRectangles.Sort(CompareRectanglesByArea);
         }
 
+        
+
+        
+        private Brush GetRandomBrush()
+        {
+            var color = new Color
+            {
+                A = 100,
+                R = (byte)_random.Next(0, 255),
+                G = (byte)_random.Next(0, 255),
+                B = (byte)_random.Next(0, 255)
+            };
+            return new SolidColorBrush(color);
+        }
+
+        private void DrawLengthIndicator(double totalLength)
+        {
+            Canvas.SetTop(LengthIndicator, totalLength);
+            LengthIndicatorLabel.Content = totalLength;
+            LengthIndicator.Visibility = Visibility.Visible;
+
+        }
+
+        private void SetSheetSize(double width, double height)
+        {
+            PackingArea.Width = width;
+            PackingArea.Height = height;
+        }
+
+        private void SetSheetSize()
+        {
+            try
+            {
+                SetSheetSize(double.Parse(WidthTextBox.Text), double.Parse(HeighTextBox.Text));
+            }
+            catch (Exception)
+            {
+                MessageBox.Show("Ошибка", "Неверные габариты листа", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void ResizeCanvasButton_Click(object sender, RoutedEventArgs e)
+        {
+            SetSheetSize();
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            SetAllowances();
+        }
+
+        private void SetAllowances()
+        {
+            try
+            {
+                _sheetAllowance = double.Parse(SheetAllowance.Text);
+                _workpieceAllowance = double.Parse(WorkPieceAllowance.Text) / 2;
+            }
+            catch (Exception)
+            {
+                MessageBox.Show("Ошибка", "Неверные значения припусков", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        #region Размещение заготовок на листе
         private static int CompareRectanglesByArea(PackableRectangle a, PackableRectangle b)
         {
             var aArea = a.Width * a.Height;
@@ -89,23 +171,14 @@ namespace Packer
             return -aMax.CompareTo(bMax);
         }
 
-        private Random _random;
-        private Brush GetRandomBrush()
+        private void ArrangeRectangles(double areaWidth, double areaHeight)
         {
-            var color = new Color
-            {
-                A = 100,
-                R = (byte)_random.Next(0, 255),
-                G = (byte)_random.Next(0, 255),
-                B = (byte)_random.Next(0, 255)
-            };
-            return new SolidColorBrush(color);
-        }
-
-        private void ArrangeRectangles()
-        {
-            var totalLength = PlaceRectangle(new Area() { Height = PackingArea.Height, Width = PackingArea.Width, X = 0, Y = 0 },
+            var sheetMargin = _sheetAllowance - _workpieceAllowance;
+            if (sheetMargin <= 0) sheetMargin = _workpieceAllowance;
+            var totalLength = PlaceRectangle(new Area() { Height = areaHeight - 2 * sheetMargin, Width = areaWidth - 2 * sheetMargin, X = 0 + sheetMargin, Y = 0 + sheetMargin},
                 _packableRectangles);
+#error Неправильный пересчет результирующей длины
+            totalLength += _sheetAllowance * 2 + _workpieceAllowance * 4;
             PackingArea.Items.Clear();
             var placedRectangles = _packableRectangles.Where((r) => r.IsPlaced);
             var placedRectanglesArray = placedRectangles as PackableRectangle[] ?? placedRectangles.ToArray();
@@ -120,15 +193,6 @@ namespace Packer
             DrawLengthIndicator(totalLength);
         }
 
-
-        private void DrawLengthIndicator(double totalLength)
-        {
-            Canvas.SetTop(LengthIndicator, totalLength);
-            LengthIndicatorLabel.Content = totalLength;
-            LengthIndicator.Visibility = Visibility.Visible;
-            
-        }
-
         private double PlaceRectangle(Area area, IEnumerable<PackableRectangle> packableRectangles)
         {
             if (area.Width.CompareTo(0) == 0 || area.Height.CompareTo(0) == 0) return 0; // no more place left
@@ -141,7 +205,7 @@ namespace Packer
                 double heightMetrics2 = -1;
                 if (packableRectangle.Fit(area))
                 {
-                    var areas = SplitArea(area, packableRectangle);
+                    var areas = area.Split(packableRectangle);
                     var freeRectangles = new List<PackableRectangle>(rectangles);
                     freeRectangles.Remove(packableRectangle); //except current
                     foreach (var freeRectangle in freeRectangles)
@@ -155,7 +219,7 @@ namespace Packer
                 packableRectangle.Rotate();
                 if (packableRectangle.Fit(area))
                 {
-                    var areas = SplitArea(area, packableRectangle);
+                    var areas = area.Split(packableRectangle);
                     var freeRectangles = new List<PackableRectangle>(rectangles);
                     freeRectangles.Remove(packableRectangle); //except current
                     foreach (var freeRectangle in freeRectangles)
@@ -180,7 +244,7 @@ namespace Packer
                     packableRectangle.X = area.X;
                     packableRectangle.Y = area.Y;
                     //and recursively split again
-                    var areas = SplitArea(area, packableRectangle);
+                    var areas = area.Split(packableRectangle);
                     var freeRectangles = new List<PackableRectangle>(rectangles);
                     freeRectangles.Remove(packableRectangle); //except current
                     foreach (var freeRectangle in freeRectangles)
@@ -196,35 +260,11 @@ namespace Packer
             return metrics;
         }
 
-        private Area[] SplitArea(Area baseArea, PackableRectangle rectangle)
+        #endregion
+
+        private void ScrollView_OnSizeChanged(object sender, SizeChangedEventArgs e)
         {
-            var areas = new Area[]
-            {
-                new Area()
-                {
-                    X = baseArea.X + rectangle.Width,
-                    Y = baseArea.Y,
-                    Width = baseArea.Width - rectangle.Width,
-                    Height = rectangle.Height
-                },
-                new Area()
-                {
-                    X = baseArea.X,
-                    Y = baseArea.Y + rectangle.Height,
-                    Width = baseArea.Width,
-                    Height = baseArea.Height - rectangle.Height
-                }
-            };
-            return areas;
+            LengthIndicator.Width = (sender as ScrollViewer).ActualWidth;
         }
-
-        private void ResizeCanvasButton_Click(object sender, RoutedEventArgs e)
-        {
-            PackingArea.Width = double.Parse(WidthTextBox.Text);
-            PackingArea.Height = double.Parse(HeighTextBox.Text);
-        }
-
-
-       
     }
 }
