@@ -18,7 +18,7 @@
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
-                <ItemsControl x:Name="PackingArea" Margin="0" Grid.Column="1">
+                <ItemsControl x:Name="PackingArea" Grid.Column="1">
                     <ItemsControl.Resources>
                         <Style TargetType="ContentPresenter">
                             <Setter Property="Canvas.Top" Value="{Binding Y}"></Setter>

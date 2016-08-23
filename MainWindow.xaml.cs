@@ -112,7 +112,6 @@ namespace Packer
             Canvas.SetTop(LengthIndicator, totalLength);
             LengthIndicatorLabel.Content = totalLength;
             LengthIndicator.Visibility = Visibility.Visible;
-
         }
 
         private void SetSheetSize(double width, double height)
@@ -177,8 +176,7 @@ namespace Packer
             if (sheetMargin <= 0) sheetMargin = _workpieceAllowance;
             var totalLength = PlaceRectangle(new Area() { Height = areaHeight - 2 * sheetMargin, Width = areaWidth - 2 * sheetMargin, X = 0 + sheetMargin, Y = 0 + sheetMargin},
                 _packableRectangles);
-#error Неправильный пересчет результирующей длины
-            totalLength += _sheetAllowance * 2 + _workpieceAllowance * 4;
+            totalLength += Math.Abs(_sheetAllowance * 2 - _workpieceAllowance * 2);
             PackingArea.Items.Clear();
             var placedRectangles = _packableRectangles.Where((r) => r.IsPlaced);
             var placedRectanglesArray = placedRectangles as PackableRectangle[] ?? placedRectangles.ToArray();
