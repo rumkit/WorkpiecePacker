@@ -5,16 +5,23 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Packer"
         mc:Ignorable="d"
-        Title="Размещение заготовок" Height="350" Width="525" Loaded="MainWindow_OnLoaded">
+        Title="Размещение заготовок" MinWidth="640" MinHeight="640" Width="800" Height="640" Loaded="MainWindow_OnLoaded">
+    <Window.Resources>
+        <BitmapImage x:Key="Logo" UriSource="logo.png" />
+    </Window.Resources>
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="9*"/>
-            <ColumnDefinition Width="3*"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="180"/>
         </Grid.ColumnDefinitions>
-        <ScrollViewer>
-            <Grid>
-                <ItemsControl x:Name="PackingArea"
-                          Margin="5">
+        <ScrollViewer VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Auto" SizeChanged="ScrollView_OnSizeChanged">
+            <Grid x:Name="ScrollViewerRootGrid">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="20"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <ItemsControl x:Name="PackingArea" Grid.Column="1">
                     <ItemsControl.Resources>
                         <Style TargetType="ContentPresenter">
                             <Setter Property="Canvas.Top" Value="{Binding Y}"></Setter>
@@ -29,34 +36,90 @@
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                         <ItemContainerTemplate>
-                            <Border BorderThickness="3" BorderBrush="Black" Width="{Binding Width}" Height="{Binding Height}" Background="{Binding Background}">
+                            <Border BorderThickness="{Binding Allowance}" BorderBrush="Black" Width="{Binding Width}" Height="{Binding Height}" Background="{Binding Background}">
                                 <Viewbox>
                                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
-                                        <Label Content="{Binding Height}"/>
+                                        <!--<Label Content="{Binding Height}"/>
                                         <Label Content="X"/>
-                                        <Label Content="{Binding Width}"/>
+                                        <Label Content="{Binding Width}"/>-->
+                                        <Label Content="{Binding}"/>
                                     </StackPanel>
                                 </Viewbox>
                             </Border>
                         </ItemContainerTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
+
+                <Canvas Background="AntiqueWhite" x:Name="LengthIndicatorCanvas" Grid.Column="0">
+                    <StackPanel x:Name="LengthIndicator" Canvas.Top="50" Width="300" Margin="0,-20,0,0" Visibility="Collapsed">
+                        <StackPanel Orientation="Horizontal">
+                            <Path Data="M20,20 L0,10 0,30 20,20" Stroke="Red" Fill="DarkRed"></Path>
+                            <Line Stroke="Red" X2="{Binding RelativeSource={RelativeSource AncestorLevel=2, Mode=FindAncestor, AncestorType={x:Type StackPanel}}, Path=Width}" StrokeThickness="3" Margin="0,20,0,0"/>
+                        </StackPanel>
+                        <Label x:Name="LengthIndicatorLabel" Margin="20,-10,0,0" ContentStringFormat="{}{0} мм" Content="40" HorizontalAlignment="Left" FontSize="18" Foreground="Red" FontWeight="Bold"></Label>
+                    </StackPanel>
+                </Canvas>
             </Grid>
         </ScrollViewer>
         <StackPanel Grid.Column="1" Orientation="Vertical">
-            <StackPanel Margin="0,5,0,0" Orientation="Horizontal">
-                <Label Content="Высота"></Label>
-                <TextBox x:Name="HeighTextBox" Width="50"></TextBox>
-            </StackPanel>
-            <StackPanel  Margin="0,5,0,5" Orientation="Horizontal">
-                <Label Content="Ширина"></Label>
-                <TextBox x:Name="WidthTextBox" Margin="10,0,0,0" Width="50"/>
-            </StackPanel>
-            <Button Content="Установить" MaxWidth="150" Margin="5,5,5,5" Click="ResizeCanvasButton_Click"></Button>
-            <TextBox x:Name="RectanglesTextBox" MinHeight="200" AcceptsReturn="True" TextWrapping="NoWrap"/>
-            <Button Content="Action" Click="ActionButton_Click" Margin="5,5,5,5"></Button>
+            <GroupBox Header="Размеры листа" Margin="3">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="30"/>
+                    </Grid.ColumnDefinitions>
+                    <Label Content="Высота" Grid.Row="0" Grid.Column="0"/>
+                    <TextBox x:Name="HeighTextBox" Grid.Row="0" Grid.Column="1" Margin="3"/>
+                    <Label Content="мм" Grid.Row="0" Grid.Column="2" HorizontalAlignment="Stretch"/>
+                    <Label Content="Ширина" Grid.Row="1" Grid.Column="0"/>
+                    <TextBox x:Name="WidthTextBox" Grid.Row="1" Grid.Column="1" Margin="3"/>
+                    <Label Content="мм" Grid.Row="1" Grid.Column="2"/>
+                    <Button Grid.Row="2" Grid.ColumnSpan="3" Content="Установить" MaxWidth="150" Margin="5,5,5,5" Click="ResizeCanvasButton_Click"/>
+                </Grid>
+            </GroupBox>
+
+            <GroupBox Header="Припуски" Margin="3">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="30"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock TextWrapping="WrapWithOverflow" Text="С края листа" Grid.Row="0" Grid.Column="0"/>
+                    <TextBox x:Name="SheetAllowance" Grid.Row="0" Grid.Column="1" Margin="3"/>
+                    <Label Content="мм" Grid.Row="0" Grid.Column="2" HorizontalAlignment="Stretch"/>
+                    <TextBlock TextWrapping="WrapWithOverflow" Text="С края заготовки" Grid.Row="1" Grid.Column="0"/>
+                    <TextBox x:Name="WorkPieceAllowance" Grid.Row="1" Grid.Column="1" Margin="3"/>
+                    <Label Content="мм" Grid.Row="1" Grid.Column="2"/>
+                    <Button Grid.Row="2" Grid.ColumnSpan="3" Content="Установить" MaxWidth="150" Margin="5,5,5,5" Click="ApplyAllowancesButton_Click"/>
+                </Grid>
+            </GroupBox>
+            <GroupBox Header="Заготовки" VerticalAlignment="Stretch">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="30"/>
+                    </Grid.RowDefinitions>
+                    <TextBox x:Name="RectanglesTextBox" Height="150"  VerticalScrollBarVisibility="Auto" Grid.Row="0" AcceptsReturn="True" TextWrapping="NoWrap"/>
+                    <Button Content="Разместить" Click="ActionButton_Click" Margin="3" Grid.Row="1"/>
+                </Grid>
+            </GroupBox>
+            <Image Source="{StaticResource Logo}" Margin="5" Height="150"/>
         </StackPanel>
 
     </Grid>
 </Window>
+
+
 
