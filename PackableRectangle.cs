@@ -71,7 +71,8 @@ namespace Packer
         public override string ToString()
         {
             //return $"Rectangle H:{Height}, W:{Width}, X:{X}, Y:{Y}";
-            return $"{_rectangle.Width}X{_rectangle.Height}\n({Width}x{Height})";
+            //return $"{_rectangle.Width}X{_rectangle.Height}\n({Width}x{Height})";
+            return $"{_rectangle.Width}X{_rectangle.Height}";
         }
     }
 }

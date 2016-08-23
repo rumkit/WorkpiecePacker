@@ -5,7 +5,10 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Packer"
         mc:Ignorable="d"
-        Title="Размещение заготовок" MinWidth="640" MinHeight="480" Width="640" Height="480" Loaded="MainWindow_OnLoaded">
+        Title="Размещение заготовок" MinWidth="640" MinHeight="640" Width="800" Height="640" Loaded="MainWindow_OnLoaded">
+    <Window.Resources>
+        <BitmapImage x:Key="Logo" UriSource="logo.png" />
+    </Window.Resources>
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
@@ -99,7 +102,7 @@
                     <TextBlock TextWrapping="WrapWithOverflow" Text="С края заготовки" Grid.Row="1" Grid.Column="0"/>
                     <TextBox x:Name="WorkPieceAllowance" Grid.Row="1" Grid.Column="1" Margin="3"/>
                     <Label Content="мм" Grid.Row="1" Grid.Column="2"/>
-                    <Button Grid.Row="2" Grid.ColumnSpan="3" Content="Установить" MaxWidth="150" Margin="5,5,5,5" Click="Button_Click"/>
+                    <Button Grid.Row="2" Grid.ColumnSpan="3" Content="Установить" MaxWidth="150" Margin="5,5,5,5" Click="ApplyAllowancesButton_Click"/>
                 </Grid>
             </GroupBox>
             <GroupBox Header="Заготовки" VerticalAlignment="Stretch">
@@ -112,6 +115,7 @@
                     <Button Content="Разместить" Click="ActionButton_Click" Margin="3" Grid.Row="1"/>
                 </Grid>
             </GroupBox>
+            <Image Source="{StaticResource Logo}" Margin="5" Height="150"/>
         </StackPanel>
 
     </Grid>

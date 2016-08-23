@@ -94,7 +94,7 @@ namespace Packer
 
         
 
-        
+        // Возвращает рандомную полупрозрачную кисть для расскраски прямоугольников
         private Brush GetRandomBrush()
         {
             var color = new Color
@@ -107,6 +107,7 @@ namespace Packer
             return new SolidColorBrush(color);
         }
 
+        // Отображает и устанавливает на необходимую высоту красную индикаторную линию
         private void DrawLengthIndicator(double totalLength)
         {
             Canvas.SetTop(LengthIndicator, totalLength);
@@ -114,12 +115,15 @@ namespace Packer
             LengthIndicator.Visibility = Visibility.Visible;
         }
 
+        // Устанавливает заданный размер листа на котором происходит размещение
         private void SetSheetSize(double width, double height)
         {
             PackingArea.Width = width;
             PackingArea.Height = height;
         }
 
+
+        // Устанавливает размер листа, указанный в текстбоксах
         private void SetSheetSize()
         {
             try
@@ -128,20 +132,22 @@ namespace Packer
             }
             catch (Exception)
             {
-                MessageBox.Show("Ошибка", "Неверные габариты листа", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("Неверные габариты листа", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
+
 
         private void ResizeCanvasButton_Click(object sender, RoutedEventArgs e)
         {
             SetSheetSize();
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e)
+        private void ApplyAllowancesButton_Click(object sender, RoutedEventArgs e)
         {
             SetAllowances();
         }
 
+        // Сохраняет значения припусков указанные в текстбоксах
         private void SetAllowances()
         {
             try
@@ -151,7 +157,7 @@ namespace Packer
             }
             catch (Exception)
             {
-                MessageBox.Show("Ошибка", "Неверные значения припусков", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("Неверные значения припусков", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -193,55 +199,75 @@ namespace Packer
 
         private double PlaceRectangle(Area area, IEnumerable<PackableRectangle> packableRectangles)
         {
-            if (area.Width.CompareTo(0) == 0 || area.Height.CompareTo(0) == 0) return 0; // no more place left
+            // Если больше нет свободного для размещения места
+            if (area.Width.CompareTo(0) == 0 || area.Height.CompareTo(0) == 0)
+                return 0;
             var rectangles = packableRectangles as PackableRectangle[] ?? packableRectangles.ToArray();
-            if (!rectangles.Any()) return 0; // no more rectangles left
+
+            // Если нет свободных для размещения прямоугольников
+            if (!rectangles.Any())
+                return 0;
             double metrics = Int32.MaxValue;
+
             foreach (var packableRectangle in rectangles)
             {
                 double heightMetrics1 = -1;
                 double heightMetrics2 = -1;
+                // Если прямоугольник влезает в текущую область размещения
                 if (packableRectangle.Fit(area))
                 {
+                    // Выделим 2 свободные области, образовавшиеся после размещения прямоугольника (правая и нижняя)
                     var areas = area.Split(packableRectangle);
                     var freeRectangles = new List<PackableRectangle>(rectangles);
-                    freeRectangles.Remove(packableRectangle); //except current
+                    // Скопируем в список все доступные прямоугольники кроме текущего
+                    freeRectangles.Remove(packableRectangle);
                     foreach (var freeRectangle in freeRectangles)
                     {
                         freeRectangle.IsPlaced = false;
                     }
-                    PlaceRectangle(areas[0], freeRectangles); //Right area placement
+                    // Разместим максимальное количество прямоугольников в правой области (она никак не сказывается на общей длине)
+                    PlaceRectangle(areas[0], freeRectangles);
+                    // Остатки разместим в нижней области
                     heightMetrics1 = PlaceRectangle(areas[1], freeRectangles.Where((r) => !r.IsPlaced)) + packableRectangle.Height;
 
+
                 }
+                // Повернем первый прямоугольник
+                // и поробуем повторить все размещение еще раз
                 packableRectangle.Rotate();
                 if (packableRectangle.Fit(area))
                 {
                     var areas = area.Split(packableRectangle);
                     var freeRectangles = new List<PackableRectangle>(rectangles);
-                    freeRectangles.Remove(packableRectangle); //except current
+                    freeRectangles.Remove(packableRectangle); 
                     foreach (var freeRectangle in freeRectangles)
                     {
                         freeRectangle.IsPlaced = false;
                     }
-                    PlaceRectangle(areas[0], freeRectangles); //Right area placement
+                    PlaceRectangle(areas[0], freeRectangles);
                     heightMetrics2 = PlaceRectangle(areas[1], freeRectangles.Where((r) => !r.IsPlaced)) + packableRectangle.Height;
 
                 }
+
+                // Если хотя бы одно размещение сошлось
+                // выберем одно с наименьшей положительной метрикой
                 if (heightMetrics1 >= 0 || heightMetrics2 >= 0)
                 {
                     if (heightMetrics2 < 0) metrics = heightMetrics1;
                     else if (heightMetrics1 < 0) metrics = heightMetrics2;
                     else metrics = Math.Min(heightMetrics2, heightMetrics1);
+                    // Если первое размещение привело к более удачному варианту, то вернемся к нему,
+                    // перевернув прямоугольник обратно
                     if (heightMetrics1 > 0 && (heightMetrics2 > heightMetrics1 || heightMetrics2 < 0))
                     {
-                        packableRectangle.Rotate(); //rotate again =)
+                        packableRectangle.Rotate();
                     }
-                    //finally place it
+                    // И окончательно разместим прямоугольник, пересчитав координаты точки начала размещения
                     packableRectangle.IsPlaced = true;
                     packableRectangle.X = area.X;
                     packableRectangle.Y = area.Y;
-                    //and recursively split again
+
+                    // Заново рекурсивно повторим наиболее удачное размещение 
                     var areas = area.Split(packableRectangle);
                     var freeRectangles = new List<PackableRectangle>(rectangles);
                     freeRectangles.Remove(packableRectangle); //except current
